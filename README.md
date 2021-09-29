@@ -6,48 +6,49 @@ It fetches onepiece-tube.com every 10 minutes for a new chapter/episode and noti
 
 Commands:
 
-/start saves the telegram user id.
-/end deletes the saved telegram user id.
+/start  saves your user id.
+/end    deletes your user id.
+
+Get Started:
+
+git clone --recursive https://www.github.com/llytaii/onepiece_bot.git
 
 Build:
 
-These instructions only work under Linux/WSL 2.
+In projects root:
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+Dependencies (Ubuntu):
+```
+sudo apt install libboost-all-dev libssl-dev make cmake g++
+```
 
-Create the folders res and bin under the projects root folder.
-
-Under /res create these files with the following content (without <>-brackets):
-
-bot.data: <bot-token> <admin-id>
-
-chapter.data: <current_chapter_number>
-
-episode.data: <current_episode_number>
-
-user.data: none
-
-
-In VS-Code hit Ctrl + Shift + B or run
-
-"/bin/g++ -g ./src/*.cpp -o ./bin/opb -std=c++17 -I ./dep/HTTPRequest -I ./dep/libtelegram/include -pthread -lcrypto -lssl"
-
-in project folder.
-
-Dependencies:
-
-g++
-
-Ubuntu/WSL:
-
-libboost-dev
-libssl-dev
 (not sure if this list is complete)
-
-Arch:
-
-boost
 
 [included]
 
 https://github.com/slowriot/libtelegram
 
 https://github.com/elnormous/HTTPRequest
+
+Run:
+
+Create a Telegram Bot using the BotFather-TelegramBot, then in projects root:
+```
+mkdir res
+cd res
+touch bot.data chapter.data episode.data user.data
+```
+and fill the files with (without <>-brackets):
+
+bot.data: <bot-token> <admin-id>
+
+chapter.data: <next_chapter_number>
+
+episode.data: <next_episode_number>
+
+user.data:
