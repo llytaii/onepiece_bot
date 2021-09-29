@@ -1,0 +1,6 @@
+[submodule "dep/HTTPRequest"]
+	path = dep/HTTPRequest
+	url = https://github.com/llytaii/HTTPRequest.git
+[submodule "dep/libtelegram"]
+	path = dep/libtelegram
+	url = https://github.com/llytaii/libtelegram.git
