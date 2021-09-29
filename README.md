@@ -2,16 +2,20 @@
 
 What it does:
 
-It fetches onepiece-tube.com every 10 minutes for a new chapter/episode and notifies all saved users about it.
+It fetches onepiece-tube.com (german website) every 10 minutes for a new chapter/episode and notifies all saved users about it.
+
 
 Commands:
 
-/start  saves your user id.
-/end    deletes your user id.
+/start  saves your user id
+
+/end    deletes your user id
+
 
 Get Started:
 
 git clone --recursive https://www.github.com/llytaii/onepiece_bot.git
+
 
 Build:
 
@@ -22,6 +26,7 @@ cd build
 cmake ..
 make
 ```
+
 Dependencies (Ubuntu):
 ```
 sudo apt install libboost-all-dev libssl-dev make cmake g++
@@ -29,11 +34,13 @@ sudo apt install libboost-all-dev libssl-dev make cmake g++
 
 (not sure if this list is complete)
 
+
 [included]
 
 https://github.com/slowriot/libtelegram
 
 https://github.com/elnormous/HTTPRequest
+
 
 Run:
 
