@@ -51,7 +51,7 @@ void Fetcher::write()
 std::string Fetcher::get_html(const std::string &_url) const
 {
     http::Response response = http::Request{_url}.send("GET");
-    Logger::log("Fetcher::get_html(): fetched " + _url + ", status code: " + std::to_string(response.status), LOG::INFO);
+    Logger::log("Fetcher::get_html(): fetched " + _url + ", status code: " + std::to_string(response.status), LOG::TRACE);
     return std::string{response.body.begin(), response.body.end()};
 }
 
@@ -61,7 +61,7 @@ bool Fetcher::new_chapter_found()
 
     if (html.find("/kapitel/" + std::to_string(m_next_chapter)) != std::string::npos)
     {
-        Logger::log("Fetcher::new_chapter_cound(): return true!", LOG::INFO);
+        Logger::log("Fetcher::new_chapter_cound(): return true!", LOG::TRACE);
         ++m_next_chapter;
         write();
         return true;
@@ -75,7 +75,7 @@ bool Fetcher::new_episode_found()
 
     if (html.find("/folge/" + std::to_string(m_next_episode)) != std::string::npos)
     {
-        Logger::log("Fetcher::new_chapter_cound(): return false!", LOG::INFO);
+        Logger::log("Fetcher::new_chapter_cound(): return false!", LOG::TRACE);
         ++m_next_episode;
         write();
         return true;
