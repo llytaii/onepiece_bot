@@ -11,7 +11,6 @@
 
 Bot::Bot() : m_fetcher{this}
 {
-
 }
 
 Bot::~Bot()
@@ -38,28 +37,29 @@ bool Bot::init()
     bot_data >> m_token >> m_admin_id;
 
     m_sender = new telegram::sender{m_token};
+    Logger::set_log_bot(this);
     m_listener = new telegram::listener::poll{*m_sender};
 
     m_listener->set_callback_message([this](const telegram::types::message &message)
-    {
-        if (!message.text)
-            return;
+                                     {
+                                         if (!message.text)
+                                             return;
 
-        auto chat_id = message.chat.id;
+                                         auto chat_id = message.chat.id;
 
-        // extract first word (the command) from message
-        std::stringstream msg{*message.text};
-        std::string cmd{};
-        msg >> cmd;
-        for (auto i : m_command_table)
-        {
-            if (cmd == i.first)
-            {
-                i.second(chat_id, msg.str());
-                break;
-            }
-        }
-    });
+                                         // extract first word (the command) from message
+                                         std::stringstream msg{*message.text};
+                                         std::string cmd{};
+                                         msg >> cmd;
+                                         for (auto i : m_command_table)
+                                         {
+                                             if (cmd == i.first)
+                                             {
+                                                 i.second(chat_id, msg.str());
+                                                 break;
+                                             }
+                                         }
+                                     });
 
     if (!m_database.init())
     {
@@ -91,7 +91,7 @@ void Bot::send_message(const std::string _message, const int_fast64_t _id) const
 void Bot::send_message_to_all_users(const std::string _message)
 {
     for (auto u : m_database.get_users())
-        if(user_has_chat(u))
+        if (user_has_chat(u))
             send_message(_message, u);
 }
 
@@ -99,7 +99,6 @@ void Bot::send_message_to_admin(const std::string _message) const
 {
     send_message(_message, m_admin_id);
 }
-
 
 bool Bot::user_has_chat(const int_fast64_t _id) const
 {
@@ -113,7 +112,7 @@ bool Bot::user_has_chat(const int_fast64_t _id) const
 
     auto http_result{http_client.Post((url.path() + "?" + url.query()).c_str(), tree.dump().c_str(), "application/json")};
 
-    if(http_result->status == 403) //403 == forbidden == has no chat with bot
+    if (http_result->status == 403) //403 == forbidden == has no chat with bot
     {
         Logger::log("Bot::user_has_chat(): return false for id " + std::to_string(_id), LOG::WARNING);
         return false;
@@ -132,7 +131,7 @@ void Bot::start_cmd(const int_fast64_t _id, const std::string &_msg)
         answer = "welcome!\n /help for more infos";
     else
         answer = "saving id " + std::to_string(_id) + " failed!\n/status for more information";
-        
+
     send_message(answer, _id);
 }
 
@@ -150,7 +149,7 @@ void Bot::end_cmd(const int_fast64_t _id, const std::string &_msg)
 
 void Bot::status_cmd(const int_fast64_t _id, const std::string &_msg)
 {
-    if(m_database.has_user(_id))
+    if (m_database.has_user(_id))
         send_message("your id is saved, you will get notified.", _id);
     else
         send_message("your id wasnt found!", _id);
@@ -175,13 +174,13 @@ void Bot::help_cmd(const int_fast64_t _id, const std::string &_msg) const
     answer += "/chapter: get link to latest chapter\n";
     answer += "/episode: get link to latest episode\n";
 
-    if(_id == m_admin_id)
+    if (_id == m_admin_id)
     {
         answer += "\nadmin commands:\n";
         answer += "/announce\n";
         answer += "/list_user\n";
     }
-    
+
     send_message(answer, _id);
 }
 
@@ -221,4 +220,3 @@ void Bot::list_user_cmd(const int_fast64_t _id, const std::string &_msg)
             send_message(std::to_string(e), _id);
     }
 }
-

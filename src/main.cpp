@@ -3,7 +3,7 @@
 
 int main()
 {
-  if(!Base::find_res_path())
+  if (!Base::find_res_path())
   {
     Logger::log("finding resource directory failed!", LOG::ERROR);
     return -1;
@@ -11,7 +11,7 @@ int main()
 
   Bot b{};
 
-  if(!b.init())
+  if (!b.init())
   {
     Logger::log("initializing bot failed!", LOG::ERROR);
     return -1;
