@@ -11,7 +11,7 @@ find_package(Threads REQUIRED)
 
 find_package(OpenSSL REQUIRED)
 
-find_package(Boost 1.66 REQUIRED COMPONENTS system)
+find_package(Boost 1.74 REQUIRED COMPONENTS system)
 IF(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 ELSE()
@@ -30,5 +30,5 @@ set(link_libs
     OpenSSL::SSL
     Boost::system)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/bot.cpp src/database.cpp src/websites.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/bot.cpp src/database.cpp src/fetcher.cpp)
 target_link_libraries(${PROJECT_NAME} ${link_libs})

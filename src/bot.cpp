@@ -1,13 +1,18 @@
 #include "bot.hpp"
+#include "logger.hpp"
 
+#include <chrono>
 #include <fstream>
 #include <httplib.h>
 #include <json.hpp>
 #include <string>
 #include <sstream>
+#include <thread>
 
-Bot::Bot()
-{}
+Bot::Bot() : m_fetcher{this}
+{
+
+}
 
 Bot::~Bot()
 {
@@ -17,23 +22,26 @@ Bot::~Bot()
 
 bool Bot::init()
 {
-    std::cout << "Starting init()..\n";
     if (m_sender || m_listener)
+    {
+        Logger::log("Bot::init(): sender || listener not nullptr!", LOG::ERROR);
         return false;
+    }
 
-    std::cout << "Reading bot.data..\n";
-    std::fstream bot_data{"./res/bot.data"};
+    std::fstream bot_data{get_res_path() /= "bot.data", std::ios::in};
     if (!bot_data.is_open())
+    {
+        Logger::log("Bot::init(): opening bot.data failed!", LOG::ERROR);
         return false;
+    }
 
     bot_data >> m_token >> m_admin_id;
 
-    std::cout << "Creating sender/listener..\n";
     m_sender = new telegram::sender{m_token};
     m_listener = new telegram::listener::poll{*m_sender};
 
-    std::cout << "Setting callback message..\n";
-    m_listener->set_callback_message([this](const telegram::types::message &message) {
+    m_listener->set_callback_message([this](const telegram::types::message &message)
+    {
         if (!message.text)
             return;
 
@@ -53,40 +61,47 @@ bool Bot::init()
         }
     });
 
-    std::cout << "Initialising Database..\n";
     if (!m_database.init())
     {
-        log("Initialization failed! m_database.init() returned false! Aborting!", LogLevel::ERROR);
+        Logger::log("Bot::init(): initializing database failed!", LOG::ERROR);
         return false;
     }
 
-    log("Initialization finished successfully!", LogLevel::INFO);
     return true;
 }
 
 void Bot::run()
 {
-    std::cout << "Start running..\n";
+    std::thread t{&Fetcher::run, &m_fetcher};
+
     if (m_listener)
+    {
+        Logger::log("Bot::run(): start running..", LOG::INFO);
         m_listener->run();
+    }
+    t.join();
 }
 
-void Bot::send_message(const std::string _message, const int_fast64_t _id)
+void Bot::send_message(const std::string _message, const int_fast64_t _id) const
 {
     if (m_sender)
         m_sender->send_message(_id, _message);
 }
 
-void Bot::notify_all(const std::string _message)
+void Bot::send_message_to_all_users(const std::string _message)
 {
-    for (auto e : m_database.get_users())
-    {
-        if(check_user_state(e))
-            send_message(_message, e);
-    }
+    for (auto u : m_database.get_users())
+        if(user_has_chat(u))
+            send_message(_message, u);
 }
 
-bool Bot::check_user_state(const int_fast64_t _id)
+void Bot::send_message_to_admin(const std::string _message) const
+{
+    send_message(_message, m_admin_id);
+}
+
+
+bool Bot::user_has_chat(const int_fast64_t _id) const
 {
     nlohmann::json tree;
     tree["chat_id"] = _id;
@@ -98,25 +113,14 @@ bool Bot::check_user_state(const int_fast64_t _id)
 
     auto http_result{http_client.Post((url.path() + "?" + url.query()).c_str(), tree.dump().c_str(), "application/json")};
 
-    if(http_result->status == 403)
+    if(http_result->status == 403) //403 == forbidden == has no chat with bot
     {
-        log("ID " + std::to_string(_id) + " failed active user check and is skipped!", LogLevel::ERROR);
+        Logger::log("Bot::user_has_chat(): return false for id " + std::to_string(_id), LOG::WARNING);
         return false;
     }
+
     return true;
 }
-
-void Bot::log(const std::string _message, LogLevel _level)
-{
-    if (m_sender)
-    {
-        std::string msg;
-        msg += (_level == LogLevel::ERROR) ? "[ERROR]: " : "[INFO]: ";
-        msg += _message;
-        m_sender->send_message(m_admin_id, msg);
-    }
-}
-
 
 // Commands:
 
@@ -124,15 +128,11 @@ void Bot::start_cmd(const int_fast64_t _id, const std::string &_msg)
 {
     std::string answer;
 
-    if (m_database.save_user(_id))
-    {
-        answer = "Welcome to the OnePieceNotifyBot.\nSee /help for more info.";
-    }
+    if (m_database.add_user(_id))
+        answer = "welcome!\n /help for more infos";
     else
-    {
-        answer = "There was a problem saving your ID!";
-        log("Failed to save ID: " + std::to_string(_id), LogLevel::ERROR);
-    }
+        answer = "saving id " + std::to_string(_id) + " failed!\n/status for more information";
+        
     send_message(answer, _id);
 }
 
@@ -140,34 +140,59 @@ void Bot::end_cmd(const int_fast64_t _id, const std::string &_msg)
 {
     std::string answer;
 
-    if (m_database.delete_user(_id))
-    {
-        answer = "Your ID was deleted, you wont be bothered anymore.";
-    }
+    if (m_database.remove_user(_id))
+        answer = "deleted id " + std::to_string(_id);
     else
-    {
-        answer = "There was a problem deleting your ID!";
-        log("Failed to delete ID: " + std::to_string(_id), LogLevel::ERROR);
-    }
+        answer = "deleting id " + std::to_string(_id) + " failed\n/status for more information";
 
-    send_message(answer, _id);
-}
-
-void Bot::help_cmd(const int_fast64_t _id, const std::string &_msg)
-{
-    std::string answer;
-
-    answer += "/start : saves your id for notifications\n";
-    answer += "/end : deletes your id\n";
-    answer += "/source : link to source code\n";
-    answer += "/status : show bot status\n";
-    
     send_message(answer, _id);
 }
 
 void Bot::status_cmd(const int_fast64_t _id, const std::string &_msg)
 {
-    send_message("Online!", _id);
+    if(m_database.has_user(_id))
+        send_message("your id is saved, you will get notified.", _id);
+    else
+        send_message("your id wasnt found!", _id);
+}
+
+void Bot::source_cmd(const int_fast64_t _id, const std::string &_msg) const
+{
+    send_message("https://github.com/llytaii/onepiece_bot", _id);
+}
+
+void Bot::help_cmd(const int_fast64_t _id, const std::string &_msg) const
+{
+    std::string answer;
+
+    answer += "id commands:\n";
+    answer += "/start : saves your id for notifications\n";
+    answer += "/end : deletes your id\n";
+    answer += "/status : show status of your id\n";
+    answer += "\ninfo commands:\n";
+    answer += "/source : link to source code\n";
+    answer += "/help: list commands\n";
+    answer += "/chapter: get link to latest chapter\n";
+    answer += "/episode: get link to latest episode\n";
+
+    if(_id == m_admin_id)
+    {
+        answer += "\nadmin commands:\n";
+        answer += "/announce\n";
+        answer += "/list_user\n";
+    }
+    
+    send_message(answer, _id);
+}
+
+void Bot::chapter_cmd(const int_fast64_t _id, const std::string &_msg)
+{
+    send_message(m_fetcher.get_current_chapter_link(), _id);
+}
+
+void Bot::episode_cmd(const int_fast64_t _id, const std::string &_msg)
+{
+    send_message(m_fetcher.get_current_episode_link(), _id);
 }
 
 void Bot::announce_cmd(const int_fast64_t _id, const std::string &_msg)
@@ -193,11 +218,7 @@ void Bot::list_user_cmd(const int_fast64_t _id, const std::string &_msg)
     if (_id == m_admin_id)
     {
         for (auto e : m_database.get_users())
-            log(std::to_string(e), LogLevel::INFO);
+            send_message(std::to_string(e), _id);
     }
 }
 
-void Bot::source_cmd(const int_fast64_t _id, const std::string &_msg)
-{
-    send_message("https://github.com/llytaii/onepiece_bot", _id);
-}

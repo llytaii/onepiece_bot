@@ -1,27 +1,25 @@
 #pragma once
+#include "base.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <set>
 
 using int_fast64_t = long;
-class Bot;
 
-class Database
+class Database : public Base
 {
 public:
-    Database() = delete;
-    explicit Database(Bot *_logger);
     bool init();
 
-    std::set<int_fast64_t> get_users();
-    bool save_user(int_fast64_t _id);
-    bool delete_user(int_fast64_t _id);
+    std::set<int_fast64_t>& get_users();
+    
+    bool has_user(const int_fast64_t _id);
+    bool add_user(const int_fast64_t _id);
+    bool remove_user(const int_fast64_t _id);
 
 private:
-    std::fstream m_file;
     std::set<int_fast64_t> m_users;
 
-    Bot *const m_logger{nullptr};
-
-    bool save_set();
+    bool write_users_to_file();
 };

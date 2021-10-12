@@ -4,12 +4,7 @@ What it does:
 
 It fetches onepiece-tube.com (german website) every 10 minutes for a new chapter/episode and notifies all saved users about it.
 
-
-Commands:
-
-/start  saves your user id
-
-/end    deletes your user id
+/help for commands
 
 
 Get Started:
@@ -19,21 +14,11 @@ git clone --recursive https://www.github.com/llytaii/onepiece_bot.git
 
 Build:
 
-In projects root:
-```
-mkdir build
-cd build
-cmake ..
-make
-```
-
 Dependencies (Ubuntu):
 ```
 sudo apt install libboost-all-dev libssl-dev make cmake g++
 ```
-
 (not sure if this list is complete)
-
 
 [included]
 
@@ -41,6 +26,14 @@ https://github.com/slowriot/libtelegram
 
 https://github.com/elnormous/HTTPRequest
 
+
+In projects root:
+```
+mkdir build
+cd build
+cmake ..
+make
+```
 
 Run:
 
@@ -59,3 +52,5 @@ chapter.data: <next_chapter_number>
 episode.data: <next_episode_number>
 
 user.data:
+
+then run.

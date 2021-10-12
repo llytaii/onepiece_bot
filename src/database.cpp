@@ -1,71 +1,70 @@
 #include "database.hpp"
-#include "bot.hpp"
-
-bool Database::save_set()
-{
-    m_file.open("./res/user.data", std::ios::out);
-    if (!m_file.is_open())
-    {
-        m_logger->log("Database::save_set(): Failed to open user.data for writing!", LogLevel::ERROR);
-        return false;
-    }
-
-    for (auto &e : m_users)
-    {
-        m_file << e;
-        m_file << ' ';
-    }
-    m_file.close();
-    return true;
-}
-
-Database::Database(Bot *_logger) : m_logger{_logger}
-{
-}
+#include "logger.hpp"
 
 bool Database::init()
 {
-    m_file.open("./res/user.data", std::ios::in);
-    if (!m_file.is_open())
+    std::fstream file{get_res_path() /= "user.data", std::ios::in};
+    if (!file.is_open())
     {
-        m_logger->log("Database::init(): fstream.is_open() returned false while opening user.data for reading!", LogLevel::ERROR);
+        Logger::log("Database::init(): opening user.data failed!", LOG::ERROR);
         return false;
     }
 
     int_fast64_t tmp;
-    while (m_file >> tmp)
-    {
-        if (!m_users.insert(tmp).second)
-        {
-            m_logger->log("Database::init(): set.insert() returned false during initialization from file!", LogLevel::ERROR);
-        }
-    }
-    m_file.close();
-    // remove dups by saving set
-    return save_set();
+    while (file >> tmp)
+        m_users.insert(tmp);
+
+    // remove possible dups by saving set
+    return write_users_to_file();
 }
 
-std::set<int_fast64_t> Database::get_users()
+std::set<int_fast64_t>& Database::get_users()
 {
     return m_users;
 }
 
-bool Database::save_user(int_fast64_t _id)
+bool Database::has_user(const int_fast64_t _id)
+{
+    return (m_users.find(_id) != m_users.end());
+}
+
+
+bool Database::add_user(const int_fast64_t _id)
 {
     if (!m_users.insert(_id).second)
     {
-        m_logger->log("Database::save_user(): set::insert() returned false!", LogLevel::ERROR);
+        Logger::log("Database::add_user(): adding id " + std::to_string(_id) + " failed!\n/status for more information", LOG::ERROR);
         return false;
     }
-    return save_set();
+    
+    return write_users_to_file();
 }
 
-bool Database::delete_user(int_fast64_t _id)
+bool Database::remove_user(const int_fast64_t _id)
 {
     if (!m_users.erase(_id))
     {
-        m_logger->log("Database::delete_user(): set.erase() returned false!", LogLevel::ERROR);
+        Logger::log("Database::remove_user(): removing id " + std::to_string(_id) + " failed!", LOG::ERROR);
         return false;
     }
-    return save_set();
+
+    return write_users_to_file();
+}
+
+bool Database::write_users_to_file()
+{
+    std::fstream file{get_res_path() /= "user.data", std::ios::out};
+    if (!file.is_open())
+    {
+        Logger::log("Database::write_users_to_file(): opening user.data failed!", LOG::ERROR);
+        return false;
+    }
+
+    for (auto u : m_users)
+    {
+        file << u;
+        file << ' ';
+    }
+
+    return true;
 }

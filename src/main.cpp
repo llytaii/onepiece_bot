@@ -1,30 +1,21 @@
 #include "bot.hpp"
-#include "websites.hpp"
-
-#include <chrono>
-#include <thread>
-
-// run bot while fetching websites in a separate thread every 10 minutes
-
-void run_fetchers(Bot *_b);
+#include "logger.hpp"
 
 int main()
 {
+  if(!Base::find_res_path())
+  {
+    Logger::log("finding resource directory failed!", LOG::ERROR);
+    return -1;
+  }
+
   Bot b{};
-  if(!b.init()) return -1;
-  std::thread t1{run_fetchers, &b};
+
+  if(!b.init())
+  {
+    Logger::log("initializing bot failed!", LOG::ERROR);
+    return -1;
+  }
 
   b.run();
-  t1.join();
-}
-
-void run_fetchers(Bot *_b)
-{
-  while (true)
-  {
-    ChapterOnePieceTube{_b};
-    EpisodeOnePieceTube{_b};
-
-    std::this_thread::sleep_for(std::chrono::minutes(10));
-  }
 }

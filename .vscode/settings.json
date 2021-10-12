@@ -77,6 +77,7 @@
         "any": "cpp",
         "coroutine": "cpp",
         "unordered_set": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "csetjmp": "cpp"
     }
 }
