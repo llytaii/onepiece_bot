@@ -157,7 +157,23 @@ void Bot::status_cmd(const int_fast64_t _id, const std::string &_msg)
 
 void Bot::source_cmd(const int_fast64_t _id, const std::string &_msg) const
 {
-    send_message("https://github.com/llytaii/onepiece_bot", _id);
+    std::string answer;
+    answer += "bot source code:\n";
+    answer += "https://github.com/llytaii/onepiece_bot\n";
+
+    answer += "\nchapter source:\n";
+    answer += "https://onepiece-tube.com/kapitel-mangaliste\n";
+
+    answer += "\nepisode source:\n";
+    answer += "https://onepiece-tube.com/episoden-streams\n";
+
+    answer += "\nworth mentioning:\n";
+    answer += "in-depth chapter analysis and other stuff:\n";
+    answer += "https://thelibraryofohara.com/\n";
+    answer += "especially check out the one piece timeline:\n";
+    answer += "https://thelibraryofohara.com/the-one-piece-timeline/";
+
+    send_message(answer, _id);
 }
 
 void Bot::help_cmd(const int_fast64_t _id, const std::string &_msg) const
@@ -169,7 +185,7 @@ void Bot::help_cmd(const int_fast64_t _id, const std::string &_msg) const
     answer += "/end : deletes your id\n";
     answer += "/status : show status of your id\n";
     answer += "\ninfo commands:\n";
-    answer += "/source : link to source code\n";
+    answer += "/source : links to source code and fetch sources\n";
     answer += "/help: list commands\n";
     answer += "/chapter: get link to latest chapter\n";
     answer += "/episode: get link to latest episode\n";
