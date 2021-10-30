@@ -228,11 +228,22 @@ void Bot::announce_cmd(const int_fast64_t _id, const std::string &_msg)
     }
 }
 
-void Bot::list_user_cmd(const int_fast64_t _id, const std::string &_msg)
+void Bot::ls_user_cmd(const int_fast64_t _id, const std::string &_msg)
 {
     if (_id == m_admin_id)
     {
         for (auto e : m_database.get_users())
             send_message(std::to_string(e), _id);
+    }
+}
+
+void Bot::rm_user_cmd(const int_fast64_t _id, const std::string &_msg)
+{
+    if(_id == m_admin_id)
+    {
+        std::stringstream ss{_msg};
+        int_fast64_t id;
+        ss >> id >> id; // discard '/rm_user'
+        m_database.remove_user(id);
     }
 }

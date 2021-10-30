@@ -1,4 +1,5 @@
 #pragma once
+
 #include "base.hpp"
 #include "database.hpp"
 #include "fetcher.hpp"
@@ -8,6 +9,7 @@
 
 #include <array>
 #include <functional>
+#include <map>
 #include <string>
 #include <tuple>
 
@@ -42,28 +44,32 @@ private:
 
     // admin cmds
     void announce_cmd(CMD_ARGS);
-    void list_user_cmd(CMD_ARGS);
+    void ls_user_cmd(CMD_ARGS);
+    void rm_user_cmd(CMD_ARGS);
+
+
+private:
 
     // map the command-strings to the matching function using a pair, 
     // where pair.first is the commandname (e.g. "/start") and pair.second a lambda that calls the function
     using CommandTable = std::pair<std::string, std::function<void(CMD_ARGS)>>;
 
-    std::array<CommandTable, 9> m_command_table{
+    std::array<CommandTable, 10> m_command_table{ // TODO: use map
         // user cmds
-        std::make_pair(std::string{"/start"},       [this](CMD_ARGS) { this->start_cmd(_id, _msg); }),
-        std::make_pair(std::string{"/end"},         [this](CMD_ARGS) { this->end_cmd(_id, _msg); }),
-        std::make_pair(std::string{"/status"},      [this](CMD_ARGS) { this->status_cmd(_id, _msg); }),
+        std::make_pair(std::string{"/start"},       [this](CMD_ARGS) { this->start_cmd(_id, _msg);    }),
+        std::make_pair(std::string{"/end"},         [this](CMD_ARGS) { this->end_cmd(_id, _msg);      }),
+        std::make_pair(std::string{"/status"},      [this](CMD_ARGS) { this->status_cmd(_id, _msg);   }),
         // info cmds 
-        std::make_pair(std::string{"/source"},      [this](CMD_ARGS) { this->source_cmd(_id, _msg); }),
-        std::make_pair(std::string{"/help"},        [this](CMD_ARGS) { this->help_cmd(_id, _msg); }),
-        std::make_pair(std::string{"/chapter"},     [this](CMD_ARGS) { this->chapter_cmd(_id, _msg); }),
-        std::make_pair(std::string{"/episode"},     [this](CMD_ARGS) { this->episode_cmd(_id, _msg); }),
+        std::make_pair(std::string{"/source"},      [this](CMD_ARGS) { this->source_cmd(_id, _msg);   }),
+        std::make_pair(std::string{"/help"},        [this](CMD_ARGS) { this->help_cmd(_id, _msg);     }),
+        std::make_pair(std::string{"/chapter"},     [this](CMD_ARGS) { this->chapter_cmd(_id, _msg);  }),
+        std::make_pair(std::string{"/episode"},     [this](CMD_ARGS) { this->episode_cmd(_id, _msg);  }),
         // admin cmds
         std::make_pair(std::string{"/announce"},    [this](CMD_ARGS) { this->announce_cmd(_id, _msg); }),
-        std::make_pair(std::string{"/list_user"},   [this](CMD_ARGS) { this->list_user_cmd(_id, _msg); }),
+        std::make_pair(std::string{"/ls_user"},     [this](CMD_ARGS) { this->ls_user_cmd(_id, _msg);  }),
+        std::make_pair(std::string{"/rm_user"},     [this](CMD_ARGS) { this->rm_user_cmd(_id, _msg);  }),
         };
 
-private:
     telegram::sender *m_sender{nullptr};
     telegram::listener::poll *m_listener{nullptr};
     
