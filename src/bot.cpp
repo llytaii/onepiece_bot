@@ -243,7 +243,8 @@ void Bot::rm_user_cmd(const int_fast64_t _id, const std::string &_msg)
     {
         std::stringstream ss{_msg};
         int_fast64_t id;
-        ss >> id >> id; // discard '/rm_user'
-        m_database.remove_user(id);
+        ss >> id;
+        if(m_database.remove_user(id))
+            Logger::log("Bot::rm_user_cmd(): successfully deleted id: " + std::to_string(id), LOG::INFO);
     }
 }
