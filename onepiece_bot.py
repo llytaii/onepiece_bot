@@ -6,6 +6,7 @@ import threading
 import random
 
 from telegram import Update
+from telegram.error import Unauthorized, BadRequest
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 # LOGGING 
@@ -34,8 +35,19 @@ bot = updater.bot
 def notify_all(text):
     global bot
     global users
+    removal_list = []
     for u in users:
-        bot.send_message(chat_id=u, text=text)
+        try:
+            bot.send_message(chat_id=u, text=text)
+        except Unauthorized:
+            removal_list.append(u)
+        except BadRequest:
+            removal_list.append(u)
+
+    for x in removal_list:
+        users.remove(x)
+
+    write_users()
 
 def start(update: Update, context: CallbackContext) -> None:
     global users
