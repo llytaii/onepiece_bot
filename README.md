@@ -1,0 +1,1 @@
+notifies users when a new one piece episode/chapter is available
