@@ -97,7 +97,7 @@ def run_fetcher():
             write_fetcher()
     
         min = random.randint(5, 10)
-        time.sleep(10)
+        time.sleep(60 * min)
 
 
 def main() -> None:
