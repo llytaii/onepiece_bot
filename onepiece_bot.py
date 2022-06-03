@@ -86,6 +86,11 @@ def run_fetcher():
     global users
 
     while(True):
+        if(check_url_for("https://read.mangach.net/","One Piece Manga Chapter " + str(next_chapter))):
+            notify_all("https://read.mangach.net/comic/read-one-piece-manga-chapter-" + str(next_chapter) + "/")
+            next_chapter += 1
+            write_fetcher()
+
         if(check_url_for("https://onepiece-tube.com/kapitel-mangaliste","/kapitel/" + str(next_chapter))):
             notify_all("https://onepiece-tube.com/kapitel/" + str(next_chapter) + "/1")
             next_chapter += 1
@@ -98,6 +103,7 @@ def run_fetcher():
     
         min = random.randint(5, 10)
         time.sleep(60 * min)
+        #time.sleep(5)
 
 
 def main() -> None:
