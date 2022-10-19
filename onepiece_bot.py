@@ -64,6 +64,11 @@ def start(update: Update, context: CallbackContext) -> None:
 def help(update: Update, context: CallbackContext) -> None:
     context.bot.send_message(chat_id=update.effective_chat.id, text="Receive updates for onepiece-tube.com!")
 
+def verlautung(update: Update, context: CallbackContext) -> None:
+    text = "Die neueste Verlautung lautet:\n"
+    text += update.message.text.partition(' ')[2].strip()
+    notify_all(text)
+
 # FETCHER
 with open('fetcher.txt', 'r') as f:
     next_chapter = int(f.readline().strip())
@@ -109,6 +114,7 @@ def run_fetcher():
 def main() -> None:
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler("verlautung", verlautung))
 
     fetcher = threading.Thread(target=run_fetcher, daemon=True)
     fetcher.start()
