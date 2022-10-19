@@ -65,9 +65,10 @@ def help(update: Update, context: CallbackContext) -> None:
     context.bot.send_message(chat_id=update.effective_chat.id, text="Receive updates for onepiece-tube.com!")
 
 def verlautung(update: Update, context: CallbackContext) -> None:
-    text = "Die neueste Verlautung lautet:\n"
-    text += update.message.text.partition(' ')[2].strip()
-    notify_all(text)
+    if(update.message.chat_id == 411036944):
+        text = "Die neueste Verlautung lautet:\n"
+        text += update.message.text.partition(' ')[2].strip()
+        notify_all(text)
 
 # FETCHER
 with open('fetcher.txt', 'r') as f:
